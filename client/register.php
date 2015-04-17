@@ -60,9 +60,7 @@ if( isset($_GET['action']))
             
             break;
         
-        case 'logout':
-            logout_user();
-            break;
+       
     }
     // end switch _GET[action]
 }
