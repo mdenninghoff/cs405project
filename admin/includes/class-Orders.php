@@ -34,9 +34,23 @@
 
 
 class Orders extends DBEntity
-{    
+{   
+    /**
+     *
+     * @var int
+     */
     public $custId = null;
+    
+    /**
+     *
+     * @var int
+     */
     public $statusId = null;
+    
+    /**
+     *
+     * @var string
+     */
     public $shipTo = null;
     
     /**
@@ -45,8 +59,16 @@ class Orders extends DBEntity
      */
     protected $dateOrdered = null;
     
+    /**
+     *
+     * @var OrderItem[] An array of OrderItem objects.
+     */
     protected $items;
     
+    /**
+     *
+     * @var Customers
+     */
     protected $Customer = null;
     
     const SQL_COLUMN_LIST = " orderId, custId, dateOrdered, statusId, shipTo ";
@@ -105,6 +127,10 @@ class Orders extends DBEntity
         return null;
     }
     
+    /**
+     * 
+     * @return OrderItem[]
+     */
     public function get_item_list()
     {
         return $this->items;
@@ -222,34 +248,64 @@ class Orders extends DBEntity
     {
         $retval = false;
         
-        if( $this->getKeyValue() != null )
-        {
-            $stmt = self::$mysqli->prepare("UPDATE ". $this->tableName." "
-                . "SET custId=?, statusId=?, shipTo=? "
-                . "WHERE ".$this->keyName."=?");
-            
-            if($stmt)
-            {
-                if( $stmt->bind_param("isisi",
-                        $this->custId,
-                        $this->statusId,
-                        $this->shipTo,
-                        $this->keyValue))
-                {
-                    $retval = $stmt->execute();
-                }
-                $stmt->close();
-            }
-            // end if stmt good.            
-        }
-        // end if not null.
+        if( $this->getKeyValue() == null )
+            throw new Exception('Cannot update with null key value.');
+
+        $stmt = self::$mysqli->prepare("UPDATE ". $this->tableName." "
+            . "SET custId=?, statusId=?, shipTo=? "
+            . "WHERE ".$this->keyName."=?");
+
+        if( ! $stmt )
+            throw new Exception(self::$mysqli->error, self::$mysqli->errno);
         
+        if( $stmt->bind_param("isisi",
+                $this->custId,
+                $this->statusId,
+                $this->shipTo,
+                $this->keyValue))
+        {
+            $retval = $stmt->execute();
+        }
+        $stmt->close();
+
         return $retval;
     }
     // end update_db().
     
+    /**
+     * Update only the order status in the database with this->statusId. Other
+     * fields remain unmodified.
+     * 
+     * @return boolean
+     * @throws Exception upon database error.
+     */
+    public function db_update_status()
+    {
+        $retval = false;
+        
+        if( $this->getKeyValue() == null )
+            throw new Exception('Cannot update with null key value.');
+
+        $stmt = self::$mysqli->prepare("UPDATE ". $this->tableName." "
+            . "SET statusId=? WHERE ".$this->keyName."=?");
+
+        if( ! $stmt )
+            throw new Exception(self::$mysqli->error, self::$mysqli->errno);
+        
+        if( $stmt->bind_param("ii", $this->statusId, $this->keyValue))
+        {
+            $retval = $stmt->execute();
+        }
+        $stmt->close();
+
+        return $retval;
+    }
+    // end db_update_status().
+    
     public function db_update_items()
     {
+        throw new Exception('Not implemented yet');
+        
         // Update each of the order item values.
         // @TODO: what if the orderItem didn't already exist?
         foreach($this->items as $OItem )
@@ -301,7 +357,7 @@ class Orders extends DBEntity
      * Single integer value searches records with matching statusId.
      * Array of integers searches records with any of the given statusIds.
      * 
-     * @return \Order
+     * @return Order[]
      * Returns an array containing Order objects or an empty array if none
      * were found.
      */
@@ -365,12 +421,25 @@ class Orders extends DBEntity
     }
     // end get_customer().
     
+    /**
+     * Mark the order as shipped.
+     * 
+     * @return boolean Returns false when quantity available is insufficient or
+     * if commit failed.
+     * Returns true when quantity available was sufficient and commit succeeded.
+     * 
+     * @throws Exception Upon any database error, orderId is null, or order
+     * is already shipped, exception is thrown.
+     */
     public function shipIt()
     {
+        $retval = false;
+        
         if( $this->keyValue == null )
             throw new Exception('OrderId is null');
         
-        throw new Exception('Not implemented yet');
+        if( $this->statusId == self::STATUS_ID_SHIPPED )
+            throw new Exception('Already shipped');
         
         /*
          * If all the components are available, the status of the order changes
@@ -383,7 +452,66 @@ class Orders extends DBEntity
         // Start a transaction.
         // Load ordered quantities and available qtys.
         //
+        //
+        // Commented out autocommit(false):
+        // "With START TRANSACTION, autocommit remains disabled until you end
+        // the transaction with COMMIT or ROLLBACK. The autocommit mode then
+        // reverts to its previous state. "
+        // https://dev.mysql.com/doc/refman/5.0/en/commit.html
+//        self::$mysqli->autocommit(false);
         
+        $this->begin_transaction();
+        
+        $doCommit = true;
+        try
+        {
+            // Lookup the available quantity of each item in this order. 
+            foreach($this->items as $OrderItem )
+            {
+                $OrderItem->qty;
+
+                // Lookup the available quantity. (init_by_key does the lookup).
+                $Item = new Item();
+                $Item->init_by_key($OrderItem->itemId);
+
+                // Compare the available inventory quantity to the desired
+                // quantity in the order.
+                // If any item has insufficient quantity, then break out
+                // of the loop and flag for a rollback.
+                if( $Item->qty_available < $OrderItem->qty )
+                {
+                    $doCommit = false;
+                    break;
+                }
+                else
+                {
+                    // Update the database: subtract the order quantity from
+                    // the available quantity.
+                    // This change may be rolled back.
+                    $Item->qty_available -= $OrderItem->qty;
+                    $Item->db_update_qty();
+                }
+                unset($Item);
+            }
+            // done looking up.
+            
+            if( $doCommit )
+            {
+                $this->statusId = Orders::STATUS_ID_SHIPPED;
+                $this->db_update_status();
+                
+                $retval = $this->commit();
+            }
+            else
+            {
+                $this->rollback();
+            }
+        } catch (Exception $ex)
+        {
+            $this->rollback();
+            throw $ex;
+        }
+        return $retval;
     }
     // end shipIt.
 }

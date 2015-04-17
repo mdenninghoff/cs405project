@@ -39,6 +39,10 @@ class OrderItem extends DBEntity
     
     const SQL_COLUMN_LIST = " orderId, itemId, price, qty ";
     
+    /**
+     * 
+     * @param int $orderId
+     */
     public function __construct( $orderId = null )
     {
         parent::__construct($orderId);

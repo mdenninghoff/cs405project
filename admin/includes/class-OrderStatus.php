@@ -148,5 +148,49 @@ class OrderStatus extends DBEntity
         return $retval;
     }
     // end db_insert().
+    
+    /**
+     * Fetch an associative array of order statuses. 
+     * The array key is statusId, array value is name.
+     * 
+     * @param mysqli $mysqli
+     * @param int $resultType
+     * @return string[]
+     * 
+     * @throws Exception upon database error.
+     */
+    public static function fetch_all($mysqli )
+    {
+        $retval = array();
+        $stmt = $mysqli->prepare("SELECT statusId, name FROM OrderStatus");
+        
+        if( !$stmt )
+            throw new Exception ($mysqli->error );
+        
+        if( $stmt->execute() )
+        {
+            $id = null;
+            $name = null;
+
+            $stmt->bind_result($id, $name );
+
+            while( $stmt->fetch() )
+            {
+                $retval[$id] = $name;
+            }
+            // done fetching rows.
+        }
+        // end if execute was good.
+        else
+        {
+            $stmt->close();
+            throw new Exception ($mysqli->error );
+        }
+
+        $stmt->close();
+
+        return $retval;
+    }
+    // end fetch_all().
 }
 // end class Staff.
