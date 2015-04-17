@@ -44,45 +44,12 @@ require('./includes/class-TablesetDefaultCSS.php');
   <title><?php echo STORE_NAME; ?></title>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="stylesheet.css" >
     <style type="text/css">
-     body{
-         margin: 10px;
-         background: none repeat scroll 0 0 #ccc;
-         font-family: arial,sans-serif,helvetica;
-     }
-     #header {
-/*         position: absolute;
-         top:0px;
-         left: 0px;
-         width: 100%;
-         height: 100px;*/
-     } 
-     #navBox {
-         width: 130px;
-         padding: 10px;
-         background: none repeat scroll 0 0 #aaa;
-     }
-     #errors{ color: white; background-color: red; padding: 1px 5px; font-weight: bold; font-size:1.5em; }
-     
-     #notices{ background-color: cornflowerblue; color:yellow; font-weight: bold; padding: 1px 5px; margin-bottom: 5px; font-size: 1.5em; }
-     
-     #mainContent { 
-         position: relative;
-         left: 173px;
-         top: -165px;
-         width: 85%;
-     }
-     
-     <?php
-//     TableSet::print_css();
-     
+     <?php     
     $TDC = new TablesetDefaultCSS();
     $TDC->set_css_th_value('background-color', 'whitesmoke');
     $TDC->set_css_footer_value('background-color', 'silver');
-//    $TDC->set_css_table_value('background-color', null);
-//    $TDC->set_css_tdOdd_value('background-color', null);
-//    $TDC->set_css_td_value('background-color', '#444');
-//    $TDC->set_tr_hover_value('background-color', null);
     $TDC->print_css();
      
      // Allow scripts that include us to add extra CSS in this block.
