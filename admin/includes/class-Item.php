@@ -108,42 +108,79 @@ class Item extends DBEntity
     
     /**
      * Update a record matching this record's key with this class member's values.
-     * 
-     * @return boolean
+     * @throws Exception Upon any database error, an exception is thrown.
      */
     public function db_update()
     {
-        $retval = false;
+        if( $this->getKeyValue() == null )
+            throw new Exception('Cannot update Item with a null key.');
         
-        if( $this->getKeyValue() != null )
+        
+        $stmt = self::$mysqli->prepare("UPDATE ". $this->tableName." "
+            . "SET enabled=?, itemType=?, qty_available=?, name=?, promoRate=?, price=?, imageName=? "
+            . "WHERE ".$this->keyName."=?");
+
+        // If statement wasn't created, then throw.
+        if( ! $stmt )
+            throw new Exception (self::$mysqli->error, self::$mysqli->errno );
+        
+        if( $stmt->bind_param("iiisddsi",
+                $this->enabled,
+                $this->itemType,
+                $this->qty_available,
+                $this->name,
+                $this->promoRate,
+                $this->price,
+                $this->imageName,
+                $this->keyValue))
         {
-            $stmt = self::$mysqli->prepare("UPDATE ". $this->tableName." "
-                . "SET enabled=?, itemType=?, qty_available=?, name=?, promoRate=?, price=?, imageName=? "
-                . "WHERE ".$this->keyName."=?");
-            
-            if($stmt)
+            if( ! $stmt->execute() )
             {
-                if( $stmt->bind_param("iiisddsi",
-                        $this->enabled,
-                        $this->itemType,
-                        $this->qty_available,
-                        $this->name,
-                        $this->promoRate,
-                        $this->price,
-                        $this->imageName,
-                        $this->keyValue))
-                {
-                    $retval = $stmt->execute();
-                }
                 $stmt->close();
+                throw new Exception('Failed to execute statement:' . self::$mysqli->error);
             }
-            // end if stmt good.
         }
-        // end if not null.
-        
-        return $retval;
+        else {
+            $stmt->close();
+            throw new Exception('Failed to bind parameters on Item->update.');
+        }
+        $stmt->close();
     }
     // end update_db().
+    
+    /**
+     * Update the qty_available field in the database with the value in
+     * this->qty_available.
+     * 
+     * @throws Exception
+     */
+    public function db_update_qty()
+    {
+        if( $this->getKeyValue() == null )
+            throw new Exception('Cannot update Item with a null key.');
+        
+        
+        $stmt = self::$mysqli->prepare("UPDATE ". $this->tableName." "
+            . "SET qty_available=? WHERE ".$this->keyName."=?");
+
+        // If statement wasn't created, then throw.
+        if( ! $stmt )
+            throw new Exception (self::$mysqli->error, self::$mysqli->errno );
+        
+        if( $stmt->bind_param("ii", $this->qty_available, $this->keyValue))
+        {
+            if( ! $stmt->execute() )
+            {
+                $stmt->close();
+                throw new Exception('Failed to execute statement:' . self::$mysqli->error);
+            }
+        }
+        else {
+            $stmt->close();
+            throw new Exception('Failed to bind parameters on Item->update_qty.');
+        }
+        $stmt->close();
+    }
     
     /**
      * Inserts a new record into the database with the given value of name.
@@ -184,6 +221,10 @@ class Item extends DBEntity
     }
     // end db_insert().
     
+    /**
+     * 
+     * @return Item[]
+     */
     public static function fetch_all()
     {
         $retval = array();
