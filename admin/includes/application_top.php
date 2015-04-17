@@ -59,6 +59,23 @@ session_set_cookie_params(COOKIE_EXPIRES_SEC, '/'.DIR_ADMIN);
 // Send the cookie and session headers.
 session_start();
 
+//
+// Initialize message stacks in session data. These allow us to display messages
+// to a user after they've been redirected.
+//
+
+// Initialize the error stack if necessary.
+if( ! isset($_SESSION[STACKNAME_ERRORS]) || !is_array($_SESSION[STACKNAME_ERRORS]))
+{
+    $_SESSION[STACKNAME_ERRORS] = array();
+}
+
+// Initialize the stack of notices if it isn't already.
+if( ! isset($_SESSION[STACKNAME_NOTICE]) || !is_array($_SESSION[STACKNAME_NOTICE]))
+{
+    $_SESSION[STACKNAME_NOTICE] = array();
+}
+
 // Check if the script that included us wants us not to redirect a user to the
 // login page if that user is not logged in.
 // The login page should not redirect a user. Otherwise, they'd be in an
