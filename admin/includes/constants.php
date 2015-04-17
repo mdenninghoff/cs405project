@@ -29,7 +29,7 @@
 
 define('SESSION_ID_KEY', 'sessID');
 
-define('STORE_NAME', 'Happy\'s Fun time Game and Toy Store');
+define('STORE_NAME', 'Amazan.can');
 define('STORE_LOGO_IMG', 'logo.jpg');
 
 // The path of admin folder. This is used to set the cookie path, and it's
@@ -74,3 +74,6 @@ define('CRYPT_SALT', 'm1RMaNe!');
 //DATE
 define('DATE_ADMIN_ORDER_BRIEF', 'D Y-M-d g:i A');  // in the list of orders. 
 define('DATE_ADMIN_ORDER_DETAIL', 'D M d, Y g:i A');    // in the detail of an order.
+
+define('STACKNAME_ERRORS','errors');
+define('STACKNAME_NOTICE','notice');
