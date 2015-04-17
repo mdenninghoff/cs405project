@@ -120,6 +120,40 @@ abstract class DBEntity
     // end getKeyValue().
     
     /**
+     * Start a transaction on $mysqli.
+     * PHP >= 5.5 have mysqli->begin_transaction() method, but our PHP is 5.3, MD.
+     * 
+     * @throws Exception
+     */
+    public function begin_transaction()
+    {
+        if( ! self::$mysqli->query("START TRANSACTION"))
+            throw new Exception('Failed to start transaction: '.self::$mysqli->error);
+    }
+    
+    /**
+     * Rollback the active transaction on $mysqli.
+     * 
+     * @throws Exception
+     */
+    public function rollback()
+    {
+        if( ! self::$mysqli->query("ROLLBACK"))
+            throw new Exception('Failed to rollback transaction: '.self::$mysqli->error);
+    }
+    
+    /**
+     * Commit the active transaction on $mysqli.
+     * 
+     * @throws Exception
+     */
+    public function commit()
+    {
+        if( ! self::$mysqli->query("COMMIT"))
+            throw new Exception('Failed to commit transaction: '.self::$mysqli->error);
+    }
+    
+    /**
      * 
      * @param mysqli $mysqli
      */
