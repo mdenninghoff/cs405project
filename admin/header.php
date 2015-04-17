@@ -28,13 +28,14 @@
  */
 
 include './includes/class-TableSet.php';
+require('./includes/class-TablesetDefaultCSS.php');
 
 //
 // Make a page header to be shown in all admin pages. Includes the navigation
 // box.
 //
 
-TableSet::set_default_css();
+//TableSet::set_default_css();
 
 ?>
 <!DOCTYPE html>
@@ -47,6 +48,7 @@ TableSet::set_default_css();
      body{
          margin: 10px;
          background: none repeat scroll 0 0 #ccc;
+         font-family: arial,sans-serif,helvetica;
      }
      #header {
 /*         position: absolute;
@@ -60,15 +62,28 @@ TableSet::set_default_css();
          padding: 10px;
          background: none repeat scroll 0 0 #aaa;
      }
+     #errors{ color: white; background-color: red; padding: 1px 5px; font-weight: bold; font-size:1.5em; }
+     
+     #notices{ background-color: cornflowerblue; color:yellow; font-weight: bold; padding: 1px 5px; margin-bottom: 5px; font-size: 1.5em; }
+     
      #mainContent { 
          position: relative;
          left: 173px;
-         top: -135px;
+         top: -165px;
          width: 85%;
      }
      
      <?php
-     TableSet::print_css();
+//     TableSet::print_css();
+     
+    $TDC = new TablesetDefaultCSS();
+    $TDC->set_css_th_value('background-color', 'whitesmoke');
+    $TDC->set_css_footer_value('background-color', 'silver');
+//    $TDC->set_css_table_value('background-color', null);
+//    $TDC->set_css_tdOdd_value('background-color', null);
+//    $TDC->set_css_td_value('background-color', '#444');
+//    $TDC->set_tr_hover_value('background-color', null);
+    $TDC->print_css();
      
      // Allow scripts that include us to add extra CSS in this block.
      if( isset($headerAdditionalCss))
@@ -95,4 +110,40 @@ TableSet::set_default_css();
    </ul>
   </div>
   <div id="mainContent">
-<?php
+  <?php
+  // Print the error stack.
+  if( count($_SESSION[STACKNAME_ERRORS]) > 0)
+  {
+      echo '<div id="errors">'."\n";
+      
+//      echo '<pre>'.print_r($_SESSION[STACKNAME_ERRORS], true) . '</pre>';
+      
+      foreach( $_SESSION[STACKNAME_ERRORS] as $msg )
+      {
+          echo "$msg<br/>\n";
+      }
+      // Clear the errors once they've been displayed; otherwise they are
+      // permanently displayed.
+      unset($_SESSION[STACKNAME_ERRORS]);
+      echo "</div><!-- end error stack -->\n";
+  }
+  // done printing error stack.
+  
+  // Print the error stack.
+  if( count($_SESSION[STACKNAME_NOTICE]) > 0)
+  {
+      echo '<div id="notices">'."\n";
+      
+      //      echo '<pre>'.print_r($_SESSION[STACKNAME_NOTICE], true) . '</pre>';
+
+        foreach( $_SESSION[STACKNAME_NOTICE] as $msg )
+        {
+            echo "$msg<br/>\n";
+        }
+      
+      // Clear the notices once they've been displayed; otherwise they are
+      // permanently displayed.
+      unset($_SESSION[STACKNAME_NOTICE]);
+      echo "</div><!-- end notice stack -->\n";
+  }
+  // done printing notice stack. 

@@ -44,7 +44,7 @@ if( isset($_GET['action']) )
 
         // @TODO: if item not found, show error message and redirect.
 
-        if( ! isset($_POST['enabled'])) 
+        if( ! isset($_POST['enabledbox'])) 
             $Item->enabled = false;
         else
             $Item->enabled = true;
@@ -67,7 +67,7 @@ if( isset($_GET['action']) )
     {
         $Item = new Item();
 
-        if( ! isset($_POST['enabled'])) 
+        if( ! isset($_POST['enabledbox'])) 
             $Item->enabled = false;
         else
             $Item->enabled = true;
@@ -88,6 +88,12 @@ if( isset($_GET['action']) )
         exit;
     }
 }
+
+$headerAdditionalCss = <<<ENDCSS
+label { display:block; float:left; width:120px; }
+
+form fieldset p { margin: 5px; }
+ENDCSS;
 
 require './header.php';
 
@@ -209,14 +215,16 @@ if( isset($_GET['action']) && $_GET['action']=='create')
     $HW = new HTMLWrap();
     
     echo '<form action="'.  href_link(FILENAME_ITEMS, array('action' => 'insert' )).'" method="POST">'."\n"
-            ."<fieldset>\n";
+            .'<fieldset><legend>Creating New Item</legend>'
+            ."\n";
     
     $itypes = ItemType::fetch_all($mysqli, ItemType::RESULT_ASSOC_ARRAY);
     
     $Item = new Item();
-        
-    $HW->print_checkbox('enabled', 1, 'Enabled', $Item->enabled);
-    echo "<br/>";
+    
+    echo '<p>';
+    $HW->print_checkbox('enabledbox', 1, 'Enabled', $Item->enabled);
+    echo "</p>";
     
     $HW->print_select('itype', $itypes, 'Item Type', $Item->itemType );
     echo "<br/>";
@@ -249,35 +257,42 @@ if(  $editItem )
     $HW = new HTMLWrap();
     
     echo '<form action="'.  href_link(FILENAME_ITEMS, array('action' => 'update', IDSTR => $_GET[IDSTR])).'" method="POST">'."\n"
-            ."<fieldset>\n";
+            .'<fieldset><legend>Editing Item ID: '.$_GET[IDSTR].'</legend>'
+            ."\n";
     
     $itypes = ItemType::fetch_all($mysqli, ItemType::RESULT_ASSOC_ARRAY);
     
     $Item = new Item();
     $Item->init_by_key($_GET[IDSTR]);
         
-    $HW->print_checkbox('enabled', 1, 'Enabled', $Item->enabled);
+    $HW->print_checkbox('enabledbox', 1, 'Enabled', $Item->enabled);
     echo "<br/>";
     
+    echo '<p>';
     $HW->print_select('itype', $itypes, 'Item Type', $Item->itemType );
-    echo "<br/>";
+    echo "</p>";
     
+    echo '<p>';
     $HW->print_textbox('qty', $Item->qty_available, 'Qty Avail');
-    echo "<br/>";
+    echo "</p>";
     
+    echo '<p>';
     $HW->print_textbox('name', $Item->name, 'Name');
-    echo "<br/>";
+    echo "</p>";
     
+    echo '<p>';
     $HW->print_textbox('promo', $Item->promoRate, 'Promo Rate');
-    echo "<br/>";
+    echo "</p>";
     
+    echo '<p>';
     $HW->print_textbox('price', $Item->price, 'Price');
-    echo "<br/>";
+    echo "</p>";
     
+    echo '<p>';
     $HW->print_textbox('image', $Item->imageName, 'Image');
-    echo "<br/>";
+    echo "</p>";
 
-    echo '<br><input type="submit" value="Update" /> <a href="'.  href_link(FILENAME_ITEMS).'">Cancel</a>';
+    echo '<input type="submit" value="Update" /> <a href="'.  href_link(FILENAME_ITEMS).'">Cancel</a>';
     echo "</fieldset>\n</form>\n";
 }
 // done printing edit form.
