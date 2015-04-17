@@ -424,6 +424,12 @@ class Orders extends DBEntity
     /**
      * Mark the order as shipped.
      * 
+     * Post-Conditions: If missing was supplied, it was initialized to an
+     * empty array and possibly filled with OrderItem objects.
+     * 
+     * @param string[] $missing If there were any missing items, then
+     * this array gets filled with messages describing why.
+     * 
      * @return boolean Returns false when quantity available is insufficient or
      * if commit failed.
      * Returns true when quantity available was sufficient and commit succeeded.
@@ -431,9 +437,12 @@ class Orders extends DBEntity
      * @throws Exception Upon any database error, orderId is null, or order
      * is already shipped, exception is thrown.
      */
-    public function shipIt()
+    public function shipIt(& $missing = array() )
     {
         $retval = false;
+        
+        if( !is_array($missing))
+            $missing = array();
         
         if( $this->keyValue == null )
             throw new Exception('OrderId is null');
@@ -481,7 +490,9 @@ class Orders extends DBEntity
                 if( $Item->qty_available < $OrderItem->qty )
                 {
                     $doCommit = false;
-                    break;
+//                    break;
+                    $missing[] = sprintf('%s needed %d but only %d were available.',
+                            $Item->name, $OrderItem->qty, $Item->qty_available);
                 }
                 else
                 {

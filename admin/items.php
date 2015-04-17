@@ -52,7 +52,11 @@ if( isset($_GET['action']) )
         $Item->itemType = $_POST['itype'];
         $Item->qty_available = $_POST['qty'];
         $Item->name = $_POST['name'];
-        $Item->promoRate = $_POST['promo'];
+        
+        // Only allow managers to update the promo rate.
+        if( $staff->isManager)
+            $Item->promoRate = $_POST['promo'];
+        
         $Item->price = $_POST['price'];
         $Item->imageName = $_POST['image'];
 
@@ -97,7 +101,7 @@ ENDCSS;
 
 require './header.php';
 
-//$mysqli = new mysqli();
+echo '<h1>Items</h1>'."\n";
 
 $editItem = false;
 if( isset($_GET['action']) && $_GET['action'] == 'edit' && isset($_GET[IDSTR]))
@@ -235,8 +239,15 @@ if( isset($_GET['action']) && $_GET['action']=='create')
     $HW->print_textbox('name', $Item->name, 'Name');
     echo "<br/>";
     
-    $HW->print_textbox('promo', $Item->promoRate, 'Promo Rate');
-    echo "<br/>";
+    if( $staff->isManager )
+    {
+        $HW->print_textbox('promo', $Item->promoRate, 'Promo Rate');
+        echo "<br/>";
+    }
+    else
+    {
+        echo 'Promo Rate: '.$Item->promoRate."<br/>\n";
+    }
     
     $HW->print_textbox('price', $Item->price, 'Price');
     echo "<br/>";
@@ -281,7 +292,15 @@ if(  $editItem )
     echo "</p>";
     
     echo '<p>';
-    $HW->print_textbox('promo', $Item->promoRate, 'Promo Rate');
+    if( $staff->isManager )
+    {
+        $HW->print_textbox('promo', $Item->promoRate, 'Promo Rate');
+        echo "<br/>";
+    }
+    else
+    {
+        echo '<label>Promo Rate</label> '.$Item->promoRate;
+    }
     echo "</p>";
     
     echo '<p>';

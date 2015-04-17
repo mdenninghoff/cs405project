@@ -59,13 +59,20 @@ if( isset($_GET['action']) )
         
         try
         {
-            if( $Order->shipIt())
+            $missing = null;
+            $res = $Order->shipIt($missing);
+            
+            if( $res )
             {
                 $_SESSION[STACKNAME_NOTICE][] = 'Shipped';   
             }
             else
             {
                 $_SESSION[STACKNAME_ERRORS][] = 'Quantity unavailable to ship order.';
+                foreach( $missing as $msg )
+                {
+                    $_SESSION[STACKNAME_ERRORS][] = $msg;
+                }
             }
         }
         catch( Exception $ex)
@@ -94,6 +101,8 @@ form fieldset {margin-top: 5px; }
 form fieldset legend { background-color:#33a383; padding:6px; }
 ENDCSS;
 require './header.php';
+
+echo '<h1>Orders</h1>'."\n";
 
 //
 // Print a form to edit an individual item.

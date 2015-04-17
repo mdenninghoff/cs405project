@@ -37,6 +37,8 @@ define('STORE_LOGO_IMG', 'logo.jpg');
 // It's also used in FS_ADMIN_BASE_DIR.
 define('DIR_ADMIN', 'cs405/admin/');
 
+define('DIR_STORE', 'cs405/');
+
 // Numer of seconds before a logged-in admin's cookie expires. 7200 = 2 hours.
 define('COOKIE_EXPIRES_SEC', 7200);
 
@@ -49,6 +51,8 @@ define('SITE_BASE_URL_ADMIN', 'http://localhost/'.DIR_ADMIN);
 // directory the running script is located.
 // Note: each path string must have a trailing slash.
 define('FS_ADMIN_BASE_DIR', '/Library/WebServer/Documents/' . DIR_ADMIN);
+
+define('FS_STORE_BASE_DIR', '/Library/WebServer/Documents/' . DIR_STORE);
 
 define('DIR_INCLUDES', 'includes/');
 

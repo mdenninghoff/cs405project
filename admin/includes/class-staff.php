@@ -29,9 +29,28 @@
 
 class Staff extends DBEntity
 {
+    /**
+     *
+     * @var string
+     */
     public $name;
+    
+    /**
+     *
+     * @var boolean 
+     */
     public $isManager;
+    
+    /**
+     *
+     * @var string
+     */
     public $password;
+    
+    /**
+     *
+     * @var string
+     */
     public $sessionId;
     
     const SQL_COLUMN_LIST = " staffId, name, isManager, password, sessionId ";
@@ -64,8 +83,6 @@ class Staff extends DBEntity
     public function init_by_key($value)
     {
         $retval = false;
-        
-//        echo '<pre>'.var_dump(DBEntity::$mysqli).'</pre>';
         
         $stmt = self::$mysqli->prepare("SELECT " . self::SQL_COLUMN_LIST . "FROM ".$this->tableName." WHERE ".$this->keyName." = ? ");
         
