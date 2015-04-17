@@ -469,7 +469,7 @@ class Orders extends DBEntity
         // https://dev.mysql.com/doc/refman/5.0/en/commit.html
 //        self::$mysqli->autocommit(false);
         
-        $fh = fopen('log.txt', 'a');
+//        $fh = fopen('log.txt', 'a');
         $this->begin_transaction();
         
         $doCommit = true;
@@ -484,8 +484,8 @@ class Orders extends DBEntity
                 $Item = new Item();
                 $Item->init_by_key($OrderItem->itemId);
                 
-                fwrite($fh, print_r($Item,true));
-                fwrite($fh, print_r($OrderItem,true));
+//                fwrite($fh, print_r($Item,true));
+//                fwrite($fh, print_r($OrderItem,true));
 
                 // Compare the available inventory quantity to the desired
                 // quantity in the order.
@@ -505,8 +505,8 @@ class Orders extends DBEntity
                     // This change may be rolled back.
                     $Item->qty_available -= $OrderItem->qty;
                     
-                    fwrite($fh, print_r($Item,true));
-                    fwrite($fh, print_r($OrderItem,true));    
+//                    fwrite($fh, print_r($Item,true));
+//                    fwrite($fh, print_r($OrderItem,true));    
                     
                     
                     
@@ -531,10 +531,10 @@ class Orders extends DBEntity
         } catch (Exception $ex)
         {
             $this->rollback();
-            fclose($fh);
+//            fclose($fh);
             throw $ex;
         }
-        fclose($fh);
+//        fclose($fh);
         return $retval;
     }
     // end shipIt.
