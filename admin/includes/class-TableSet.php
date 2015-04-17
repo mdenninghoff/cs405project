@@ -1,8 +1,9 @@
 <?php
 /* 
- * File: class-TableSet.php
+ * File: class-Tableset.php
+ * Author: Matthew Denninghoff
  * 
- * A class for printing out html tables from query results or other data.
+ * A class for printing out a formatted HTML table from a 2D array of data.
  * 
  * The MIT License
  *
@@ -39,15 +40,7 @@ const CSV_ENCLOSURE = '"';
 
 class TableSet
 {
-    static protected $css_table;
-    static protected $css_caption = null;
-    static protected $css_th;
-    static protected $css_td;
-    static protected $css_td_odd;
-    static protected $css_td_int;
-    static protected $css_td_str;
-    static protected $css_td_real;
-    static protected $css_footer;
+    const DEFAULT_CSS_CLASS = 'tableset';
     
     /**
      * Number of rows in a good result or 0.
@@ -92,27 +85,6 @@ class TableSet
      * @var array 
      */
     protected $data;
-    protected $data_orig;
-    
-    /**
-     * Array to hold the order that columns should be output.
-     * For example, with order array( 0 => 0, 1 => 2, 2 => 1)
-     * The first column output is column 0, the 2nd is column 2,
-     * and the third is column 1.
-     *
-     * @var array 
-     */
-//    protected $output_order;
-    
-    /**
-     * Array to hold the order that columns should be output.
-     * For example, with array( 0 => 2, 1 => null, 2 => 1)
-     * The first column output should be column 0, the 2nd should be column 2,
-     * and the third should be column 1.
-     *
-     * @var array
-     */
-//    protected $next_column;
     
     // String to print inside the table caption tag.
     // The default value of null prevents the caption tag from being output.
@@ -127,7 +99,7 @@ class TableSet
      * default colors when you use multiple TableSets on a page.
      * @var string 
      */
-    public $css_extra_class = null;
+    public $css_class;
     
     /**
      * Flag. When true, a column with row numbers is output along with the
@@ -149,8 +121,6 @@ class TableSet
     
     const COLUMN_DEFAULT_TYPE = TableSet::TYPE_STRING;
     
-    const CSS_TABLE_CLASS = 'tableset';
-    
     /**
      * Initialize column and row counts to 0. Data is empty.
      */
@@ -168,237 +138,23 @@ class TableSet
         $this->show_row_numbers = true;
         
         $this->data = array();
-        $this->data_orig = array();
-//        $this->next_column = array();
-//        $this->output_order = array();
         
         // Default filename to send to browser upon download.
         $this->csv_filename = 'results.csv';
+        $this->css_class = Tableset::DEFAULT_CSS_CLASS;
     }
     // end __construct().
     
-    /**
-     * Setup an array that holds CSS data.
-     * 
-     */
-    static public function set_default_css()
-    {
-        TableSet::$css_table = array();
-        TableSet::$css_caption = array();
-        TableSet::$css_td = array();
-        TableSet::$css_th = array();
-        TableSet::$css_footer = array();
                 
-        TableSet::$css_table['font-family'] = 'courier new, courier,monospace';
-        TableSet::$css_table['font-size'] = '12pt';
-        TableSet::$css_table['border-spacing'] = '0px';
-        TableSet::$css_table['border-left'] = 'solid 1px #777';
-        TableSet::$css_table['border-bottom'] = 'solid 1px #777';
-        TableSet::$css_table['background-color'] = '#999';
         
-        TableSet::$css_th['font-family'] = 'arial';
-        TableSet::$css_th['background-color'] = 'firebrick';
-        
-        TableSet::$css_th['padding'] = '0px 10px;';
-        TableSet::$css_th['border-style'] = 'solid';
-        TableSet::$css_th['border-width'] = '1px 1px 0px 0px';
-        TableSet::$css_th['border-color'] = '#777';
-        
-        TableSet::$css_caption['font-family'] = 'arial';
-        TableSet::$css_caption['background-color'] = '#333';
-        
-        TableSet::$css_td['padding'] = '0px 10px;';
-        TableSet::$css_td['border-style'] = 'solid';
-        TableSet::$css_td['border-width'] = '1px 1px 0px 0px';
-        TableSet::$css_td['border-color'] = '#777';
-        
-        TableSet::$css_td_int = array('text-align' => 'right');
-        TableSet::$css_td_real = array('text-align' => 'right');
-        TableSet::$css_td_str = null;
-        
-        TableSet::$css_td_odd = array('background-color' => '#ccc');
-        
-        TableSet::$css_footer['text-align'] = 'right';
-        
-//        $this->css[self::CSS_SEL_CLASSTABLESET.' p.rightDim'] = 'color:#aaa; margin:6px 10px 30px; text-align: right; width:69%;';
-    } 
-    // end set_default_css().
-    
-    
-    /**
-     * Set a CSS value for the main table.tableset.
-     * 
-     * @param string $key
-     * @param string $val
-     */
-    static public function set_css_table_value( $key, $val)
-    {
-        $this->css_table[$key] = $val;
-    }
-    // end set_css_table_value().
-    
-    static public function set_css_td_value( $key, $val)
-    {
-        $this->css_td[$key] = $val;
-    }
-    
-    static public function set_css_th_value( $key, $val)
-    {
-        $this->css_th[$key] = $val;
-    }
-    
-    static public function set_css_tdint_value( $key, $val)
-    {
-        $this->css_td_int[$key] = $val;
-    }
-    
-    static public function set_css_tdreal_value( $key, $val)
-    {
-        $this->css_td_real[$key] = $val;
-    }
-    
-    static public function set_css_tdstr_value( $key, $val)
-    {
-        $this->css_td_str[$key] = $val;
-    }
-    
-    static public function set_css_caption_value( $key, $val)
-    {
-        TableSet::$css_caption[$key] = $val;
-    }
-    
-    static public function set_css_footer_value($key, $val)
-    {
-        TableSet::$css_footer[$key] = $val;
-    }
-    
-    static public function set_css_tdOdd_value($key, $val)
-    {
-        TableSet::$css_td_odd[$key] = $val;
-    }
-    
-    /**
-     * Print the CSS defined in $this->css_table and other css fields.
-     * This output should be surrounded with the style tag.
-     * 
-     */
-    static public function print_css()
-    {
-        echo "/* Start TableSet css. */\n";
-        
-        // Print the main table style.
-        if( count(TableSet::$css_table) > 0 )
-        {
-            echo 'table.'.self::CSS_TABLE_CLASS . '{';
-            foreach(TableSet::$css_table as $key => $val )
-            {
-                echo $key . ':' . $val . ';';
-            }
-            echo "}\n";
-        }
-        
-        // Print the style for TH.
-        if( count(TableSet::$css_th) > 0 )
-        {
-            echo 'table.'.self::CSS_TABLE_CLASS . ' th {';
-            foreach(TableSet::$css_th as $key => $val )
-            {
-                echo $key . ':' . $val . ';';
-            }
-            echo "}\n";
-        }
-        
-        // Print the style for TD.
-        if( count(TableSet::$css_td) > 0 )
-        {
-            echo 'table.'.self::CSS_TABLE_CLASS . ' td {';
-            foreach(TableSet::$css_td as $key => $val )
-            {
-                echo $key . ':' . $val . ';';
-            }
-            echo "}\n";
-        }
-        
-        
-        // Print the style for caption.
-        if( count(TableSet::$css_caption) > 0 )
-        {
-            echo 'table.'.self::CSS_TABLE_CLASS . ' caption {';
-            foreach(TableSet::$css_caption as $key => $val )
-            {
-                echo $key . ':' . $val . ';';
-            }
-            echo "}\n";
-        }
-        
-        
-        // Print the style for td.int .
-        if( count(TableSet::$css_td_int) > 0 )
-        {
-            echo 'table.'.self::CSS_TABLE_CLASS . ' td.'.self::TYPE_INT.' {';
-            foreach(TableSet::$css_td_int as $key => $val )
-            {
-                echo $key . ':' . $val . ';';
-            }
-            echo "}\n";   
-        }
-        
-        // Print the style for td.real .
-        if( count(TableSet::$css_td_real) > 0 )
-        {
-            echo 'table.'.self::CSS_TABLE_CLASS . ' td.'.self::TYPE_REAL.' {';
-            foreach(TableSet::$css_td_real as $key => $val )
-            {
-                echo $key . ':' . $val . ';';
-            }
-            echo "}\n";
-        }
-        
-        // Print the style for td.str .
-        if( count(TableSet::$css_td_str) > 0 )
-        {
-            echo 'table.'.self::CSS_TABLE_CLASS . ' td.'.self::TYPE_STRING.' {';
-            foreach(TableSet::$css_td_str as $key => $val )
-            {
-                echo $key . ':' . $val . ';';
-            }
-            echo "}\n";
-        }
-        
-        // Print the footer style.
-        if( count(TableSet::$css_footer) > 0 )
-        {
-            echo 'table.'.self::CSS_TABLE_CLASS . ' tfoot td {';
-            foreach(TableSet::$css_footer as $key => $val )
-            {
-                echo $key . ':' . $val . ';';
-            }
-            echo "}\n";
-        }
-        
-        // Print style for odd rows.
-        if( count(TableSet::$css_td_odd) > 0 )
-        {
-            echo 'table.'.self::CSS_TABLE_CLASS . ' tr.odd {';
-            foreach(TableSet::$css_td_odd as $key => $val )
-            {
-                echo $key . ':' . $val . ';';
-            }
-            echo "}\n";
-        }
-        
-        echo 'table.'.self::CSS_TABLE_CLASS.' tbody tr:hover {background-color:white;}'."\n";
-        
-        echo "/* end TableSet css. */\n";
-    }
-    // end print_css().
-
-    
     /**
      * Set the internal data table with $data.
      * Data must be a 2D array with integer indexes.
      * Returns false if $data was of the wrong format.
      * Returns true if $data was accepted and $this->data was set.
+     * 
+     * Post-Conditions: These fields are modified:
+     * data, num_cols, num_rows, column_types, footer.
      * 
      * @param array $data
      * @return boolean
@@ -418,18 +174,11 @@ class TableSet
                 
                 $this->data = $data;
 
-//                // Set the column ordering at default.
-                $col=0;
-                for(; $col < $this->num_cols; $col++ )
+                for($col=0; $col < $this->num_cols; $col++ )
                 {
-//                    $this->next_column[$col] = $col + 1;
-//                    $this->output_order[$col] = $col;
-                    
                     // Default to string type.
                     $this->column_types[$col] = self::TYPE_STRING;
                 }
-////                // The last column has no next column.
-////                $this->next_column[$col - 1] = null;
                 
                 $this->footer = $this->num_rows . ' rows';
                 
@@ -449,6 +198,8 @@ class TableSet
      * Print HTTP headers that make the browser prompt the user to download
      * the subsequent data as a CSV file.
      * 
+     * The headers must be sent before regular output is sent to the browser.
+     * 
      */
     public function print_csv_headers()
     {
@@ -464,19 +215,11 @@ class TableSet
     // end print_csv_headers().
     
     /**
-     * Fetch the query results and print the output as CSV data.
+     * Output the table data as CSV data.
      * 
      * Reference: 
      * http://code.stephenmorley.org/php/creating-downloadable-csv-files/
      * 
-     * Pre-Conditions: print_table_html() must not have been called before this
-     *    function. Otherwise, the query isn't re-fetched.
-     * 
-     *    To use column names that are not the raw SQL fields, call 
-     *    $this->set_column_name() on the desired columns.
-     * 
-     * Post-Condition: Rows from the SQL query have been fetched, and the
-     *    results were output to the browser as CSV data.
      */
     public function print_table_csv()
     {
@@ -489,19 +232,6 @@ class TableSet
         // Iterate over each data row.
         for($row=0; $row < $this->num_rows; $row++)
         {
-//            // Create the output row.
-//            $rowout = array();
-//            for($col=0; $col < $this->num_cols; $col++)
-//            {
-//                $outc = $this->output_order[$col];
-//                
-//                $val = $this->data[$row][$outc];
-//
-//                $rowout[] = $val;
-//            }
-//            // done creating the output row.
-         
-//            fputcsv($output, $rowout, CSV_DELIMITER, CSV_ENCLOSURE);
             fputcsv($output, $this->data[$row], CSV_DELIMITER, CSV_ENCLOSURE);
         }
         // done iterating over each row.
@@ -512,25 +242,22 @@ class TableSet
     // end print_table_csv().
     
     /**
-     * Fetch the results of the database query and print HTML table out to the
+     * Print HTML table of the internal $data array out to the
      * browser. If a caption is specified, then the table uses that caption.
      * Likewise, a specified footer is output.
      * 
-     * Pre-Conditions: print_table_csv() must not have been called before this
-     *    function. Otherwise, the query isn't re-fetched.
      */
     public function print_table_html()
     {
-        echo '<table class="'.self::CSS_TABLE_CLASS;
+        // Print the table tag and use the class string so that CSS styles
+        // can apply to the table.
+        echo '<table class="'.$this->css_class. '">'."\n";
         
-        if( $this->css_extra_class != null )
-            echo ' '.$this->css_extra_class;
-        
-        echo '">'."\n"
-        . ($this->caption ? ' <caption>'.$this->caption.'</caption>' . "\n" : '')
+        // The caption tag is displayed above the column headers.
+        echo ($this->caption ? ' <caption>'.$this->caption.'</caption>' . "\n" : '')
         . " <thead><tr>\n";
 
-        // Print the column heading for row numbers.
+        // Optionally, print the column heading for row numbers.
         if( $this->show_row_numbers)
         {
             echo "  <th>&nbsp;</th>\n";
@@ -550,7 +277,8 @@ class TableSet
 
         echo " </tr></thead>\n";
 
-        // Print the table footer.
+        // Print the table footer, which appears below the table rows.
+        // The footer is one TD cell that spans the width of the table.
         if( $this->footer )
         {
             $span = $this->num_cols;
@@ -560,17 +288,19 @@ class TableSet
 
         echo " <tbody>\n";
 
-        // Fetch each result row and print it.
+        // Iterate over every row in the table.
         $rowCnt = 1;
         for($row=0; $row < $this->num_rows; $row++)
         {
-            $css_class = '';
+            // Print a class attribute so that odd rows may have different
+            // colors.
+            $oddeven_class = '';
             if( ($row % 2) == 1 )
             {
-                $css_class .= ' class="odd"';
+                $oddeven_class .= ' class="odd"';
             }
             
-            echo "  <tr$css_class>\n";
+            echo "  <tr$oddeven_class>\n";
 
             // Print the row number and increment the counter.
             if( $this->show_row_numbers)
@@ -581,15 +311,10 @@ class TableSet
             // Print each column value in this row.
             for($col=0; $col < $this->num_cols; $col++)
             {
-                
-                
-                // Get the output column number. If column ordering didn't change,
-                // then this is the same value as $col.
-//                $outc = $this->output_order[$col];
-                
-//                echo '   <td class="'. $this->column_types[$outc] . '">'.$this->data[$row][$outc] . "</td>\n";
-                
+                // The normal output is the raw data.
                 $outstr = $this->data[$row][$col];
+                
+                // If there is a format string, call sprintf() using the format.
                 if( isset($this->column_formats[$col]))
                 {
                     $outstr = sprintf($this->column_formats[$col], $this->data[$row][$col]);
@@ -679,7 +404,17 @@ class TableSet
         $this->column_types = $types;
         return true;
     }
+    // end set_column_types().
     
+    /**
+     * Set a single column's HTML output format string. If a column has a 
+     * format, then the format goes into a call to sprintf() on the data.
+     * This is useful for specifying the number of decimal places in floats.
+     * 
+     * @param int $colNo
+     * @param string $format
+     * @return boolean
+     */
     public function set_column_format($colNo, $format)
     {
         if( ! $this->column_exists($colNo))
@@ -689,7 +424,17 @@ class TableSet
         
         return true;
     }
+    // set_column_format().
     
+    /**
+     * Set all column formats to be used in HTML output. 
+     * 
+     * @param array $formats
+     * Should be an array of length = number of data columns.
+     * Array values should be format strings used for sprintf().
+     * 
+     * @return boolean
+     */
     public function set_column_formats($formats)
     {
         if( !is_array($formats) || count($formats) != $this->num_cols)
@@ -698,6 +443,7 @@ class TableSet
         $this->column_formats = $formats;
         return true;
     }
+    // end set_column_formats().
     
     /**
      * Sets a column width. Returns false if the column number was out of bounds.
@@ -724,13 +470,16 @@ class TableSet
      * in $arr, then the corresponding value in $arr[matching_key] replaces
      * the cell data.
      * 
-     * A backup of the column is made before anything is replaced.
+     * The original column values are returned as an array.
      * (That allows you to display descriptive text but still use numeric
      * data in href links, for instance.)
      * 
      * @param int $colNo
      * @param array $arr
-     * @return boolean
+     * 
+     * @return mixed
+     * Returns false for invalid arguments. Returns the original column values
+     * otherwise.
      */
     public function replace_column_values($colNo, $arr )
     {
@@ -740,14 +489,16 @@ class TableSet
         if(! is_array($arr))
             return false;
         
-        // If we haven't already, backup the column data.
-        if( ! isset($this->data_orig[$colNo]))
-            $this->data_orig[$colNo] = $this->data[$colNo];
+        $old_values = array();
         
         // Replace column values in each row.
         for($row=0; $row < $this->num_rows; $row++)
         {
             $val = $this->data[$row][$colNo];
+            
+            // Put the backed-up value into old_values.
+            $old_values[$colNo] = $val;
+            
             // See if there exists a mapping to swap out the cell
             // value with a more descriptive value.
             if(  isset($arr[$val]) )
@@ -757,9 +508,9 @@ class TableSet
         }
         // done iterating over each row.
         
+        return $old_values;
     }
     // end replace_column_values().
-    
     
     /**
      * Returns false if the column number was out of bounds; true otherwise.
@@ -787,6 +538,7 @@ class TableSet
             return false;
         return true;
     }
+    // end row_exists().
     
     /**
      * Set the flag to show or hide the column containing row numbers.
@@ -815,6 +567,7 @@ class TableSet
     {
         return $this->num_rows;
     }
+    // end get_num_rows().
     
     /**
      * Return the number of columns in the table data.
@@ -828,8 +581,7 @@ class TableSet
     // end get_num_cols().
     
     /**
-     * Returns the column name (header) given the column number.
-     * 
+     * Returns the column name (i.e. header) for a column number.
      * 
      * @param int $colNo
      * @return mixed
@@ -846,7 +598,7 @@ class TableSet
     // end get_col_name().
     
     /**
-     * Add a column to the end of the column set.
+     * Add an empty column to the end of the column set.
      * 
      * @param string $name
      */
@@ -869,84 +621,44 @@ class TableSet
     /**
      * Return the value at the specified cell, or null if the cell doesn't
      * exist.
-     * If $orig is true, returns the original data that wasn't changed with
-     * a call to replace_column_values().
      * 
      * @param int $rowNo
      * @param int $colNo
-     * @param boolean $orig
+     * 
      * @return mixed
      */
-    public function get_value_at($rowNo, $colNo, $orig = false)
+    public function get_value_at($rowNo, $colNo )
     {
         if( !$this->column_exists($colNo) || ! $this->row_exists($rowNo))
             return null;
-        
-        // See if there is backed-up data at this cell.
-        if( $orig && isset($this->data_orig[$rowNo][$colNo]))
-            return $this->data_orig[$rowNo][$colNo];
         
         return $this->data[$rowNo][$colNo];
     }
     // end get_value_at().
     
     /**
-     * Set the cell value at row, col.
+     * Set the cell value at row, col. Returns the original value being
+     * replaced.
      * 
      * @param int $rowNo
      * @param int $colNo
      * @param mixed $value
-     * @return boolean
+     * 
+     * @return mixed
+     * Returns false if arguments were invalid.
+     * Returns the original value that has been replaced.
      */
     public function set_value_at($rowNo, $colNo, $value )
     {
         if( !$this->column_exists($colNo) || ! $this->row_exists($rowNo))
             return false;
         
-        // Backup the original value.
-        $this->data_orig[$rowNo][$colNo] = $this->data[$rowNo][$colNo];
+        $old_val = $this->data[$rowNo][$colNo];
         
         $this->data[$rowNo][$colNo] = $value;
+        
+        return $old_val;
     }
     // end set_value_at().
-
-
-    public function replace_headers_by_map($map, $startCol, $colPrefix)
-    {
-        if( !is_array($map))
-        {
-            return false;
-        }
-
-        if( ! $this->column_exists($startCol))
-            return false;
-        // done parameter checking.
-//        
-//        $prefLen = strlen($colPrefix);
-
-        // Replace column headers with descriptive ones.
-        if( $this->get_num_cols() > $startCol )
-        {
-            // For each column after closing price.
-            for($colNo=$startCol; $colNo < $this->num_cols; $colNo++ )
-            {
-                $cname = str_replace($colPrefix, '', $this->column_names[$colNo]);
-                
-                // the volType column name should be "vol" followed by a number.
-                // remove "vol" and swap a description for the number.
-//                $cname = substr($this->column_names[$colNo], 3);
-                if( isset($map[$cname]))
-                {
-                    $this->column_names[$colNo] = $map[$cname];
-                }
-            }
-            // done iterating over columns.
-        }
-        // done replacing column headers.
-
-        return true;
-    }
-    //
-    
 }
-// end class MysqlResultTable.
+// end class TableSet.
