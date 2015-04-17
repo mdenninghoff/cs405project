@@ -29,6 +29,11 @@
 require './includes/application_top.php';
 require './includes/class-HtmlWrap.php';
 
+const REPORTVIEW_WEEK  = 0;
+const REPORTVIEW_MONTH = 1;
+const REPORTVIEW_YEAR  = 2;
+const GETKEYVIEW = 'view';
+
 // Redirect anyone who is not a manager and give an error message.
 if( ! $staff->isManager )
 {
@@ -53,6 +58,11 @@ echo '<p>Sales Statistics View the list of all items and sales history in the pr
  * @todo Make queries to handle such data.
  */
 
+$reportview = REPORTVIEW_WEEK;
+if( isset($_GET[GETKEYVIEW]))
+{
+    $reportview = $_GET[GETKEYVIEW];
+}
 $stmt = $mysqli->prepare("SELECT itm.itemId, itm.enabled, typ.name,"
         . " itm.qty_available, itm.name, itm.promoRate, itm.price "
         . "FROM Item itm JOIN ItemType typ ON typ.itemTypeId = itm.itemType "
