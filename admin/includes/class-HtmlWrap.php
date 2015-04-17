@@ -56,7 +56,7 @@ class HTMLWrap
         if( !is_array($values))
             return '';
 
-        echo '<label>'.$label.' <select name="'.$name.'"'
+        echo '<label for="'.$name.'">'.$label.'</label> <select name="'.$name.'"'
                 . ($multiple ? ' multiple' : '');
 
         if( $size > count($values) )
@@ -94,7 +94,7 @@ class HTMLWrap
      */
     public function print_textbox( $name, $value, $label )
     {
-        echo '<label>'.$label.' <input type="text" name="'.$name.'" value="'.$value.'" /></label>'."\n";
+        echo '<label for="'.$name.'">'.$label.'</label> <input type="text" name="'.$name.'" value="'.$value.'" /></label>'."\n";
     }
     // end print_textbox().
     
@@ -122,6 +122,9 @@ class HTMLWrap
     /**
      * Print a single checkbox and check it if $value equals $selected
      * 
+     * Note: placing the input tag inside of the label tag allows a user
+     * to click on the label to click on the box.
+     * 
      * @param string $name name attribute for input.
      * @param mixed $value value attribute for input.
      * @param string $label label to the right of checkbox.
@@ -130,7 +133,7 @@ class HTMLWrap
     public function print_checkbox( $name, $value, $label, $selected = '')
     {
         $chk = $value == $selected ? ' checked="checked"' : '';
-        echo '<input type="checkbox" name="'.$name.'" value="'.$value.'"'.$chk."/> $label";
+        echo '<label><input type="checkbox" name="'.$name.'" value="'.$value.'"'.$chk.'/>'.$label.'</label>'."\n";
     }
 }
 // end class HTMLWrap
