@@ -330,7 +330,7 @@ class Orders extends DBEntity
 
         if($stmt)
         {
-            if( $stmt->bind_param("isis",
+            if( $stmt->bind_param("iis",
                         $this->custId,
                         $this->statusId,
                         $this->shipTo ))
