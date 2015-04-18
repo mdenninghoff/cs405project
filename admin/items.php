@@ -37,7 +37,6 @@ if( isset($_GET['action']) )
 //    die( print_r($_POST,true) . print_r($_GET,true));
     if( $_GET['action'] == 'update' && isset($_GET[IDSTR]) )
     {
-            // @TODO: verify manager  type.
 
         $Item = new Item();
         $Item->init_by_key($_GET[IDSTR]);
@@ -58,14 +57,60 @@ if( isset($_GET['action']) )
             $Item->promoRate = $_POST['promo'];
         
         $Item->price = $_POST['price'];
-        $Item->imageName = $_POST['image'];
 
+//        echo '<pre>'. print_r($_FILES,true).'</pre>'; exit;
+        
+        if( isset($_FILES['image']))
+        {
+            // Code from: http://www.w3schools.com/php/php_file_upload.asp
+            $targetDir = FS_STORE_BASE_DIR . DIR_IMAGES_PRODUCTS;
+
+            //
+            $targetFile = $targetDir . basename($_FILES['image']['name']);
+            $imageFileType = strtolower( pathinfo($targetFile,PATHINFO_EXTENSION));
+            
+            // For safer uploads, only use the itemID as the filename, and
+            // don't let the user dictate the filename.
+            $targetFile = $targetDir . $Item->getKeyValue() . $imageFileType;
+            
+            // Check if image file is an actual image or fake image.
+            $check = getimagesize($_FILES['image']['tmp_name']);
+            if($check !== false)
+            {
+                if( in_array($imageFileType, array('jpg','png','jpeg','gif')))
+                {
+                    if(move_uploaded_file($_FILES['image']['tmp_name'], $targetFile))
+                    {
+                        $_SESSION[STACKNAME_NOTICE][] = 'The file '.basename( $_FILES['image']['name']). ' was uploaded.';
+                        
+                        // Change the database value.
+//                        $Item->imageName = $_FILES['image']['name'];
+                        $Item->imageName = $Item->getKeyValue() . $imageFileType;
+                        
+                    } else {
+                        $_SERVER[STACKNAME_ERRORS][] = "Sorry, there was an error uploading your file.";
+                    }
+                    // done checking if file saved.
+                }
+                else
+                {
+                    $_SERVER[STACKNAME_ERRORS][] = 'Image extension unsupported: '.$imageFileType;
+                }
+                // done checking image filename extension.
+            }
+            // end if getimagesize returned false.
+            else
+            {
+                $_SERVER[STACKNAME_ERRORS][] = 'Image was not valid';
+            }
+            // done handling imagesize returned false.
+        }
+        // end if isset post image.
+        
         $Item->db_update();
 
-        // @TODO: show any errors.
-
         // Redirct back to items.php.
-        http_redirect(FILENAME_ITEMS);
+        http_redirect(FILENAME_ITEMS.'?action=edit&'.IDSTR.'='.$_GET[IDSTR]);
     }
     else if( $_GET['action'] == 'insert' )
     {
@@ -83,13 +128,14 @@ if( isset($_GET['action']) )
         $Item->price = $_POST['price'];
         $Item->imageName = $_POST['image'];
 
+        $Item->db_insert();
+        
 //        var_dump($Item->db_insert());
 
         // @TODO: show any errors.
 
         // Redirct back to items.php.
         http_redirect(FILENAME_ITEMS);
-        exit;
     }
 }
 
@@ -218,7 +264,7 @@ if( isset($_GET['action']) && $_GET['action']=='create')
     // @TODO: combine insert and edit code.
     $HW = new HTMLWrap();
     
-    echo '<form action="'.  href_link(FILENAME_ITEMS, array('action' => 'insert' )).'" method="POST">'."\n"
+    echo '<form action="'.  href_link(FILENAME_ITEMS, array('action' => 'insert' )).'" method="POST" enctype="multipart/form-data">'."\n"
             .'<fieldset><legend>Creating New Item</legend>'
             ."\n";
     
@@ -252,8 +298,10 @@ if( isset($_GET['action']) && $_GET['action']=='create')
     $HW->print_textbox('price', $Item->price, 'Price');
     echo "<br/>";
     
-    $HW->print_textbox('image', $Item->imageName, 'Image');
-    echo "<br/>";
+//    $HW->print_textbox('image', $Item->imageName, 'Image');
+//    echo "<br/>";
+    
+    echo '<input type="file" name="image"><br/>';
     
     echo '<br><input type="submit" value="Insert" /> <a href="'.  href_link(FILENAME_ITEMS).'">Cancel</a>';
     echo "</fieldset>\n</form>\n";
@@ -267,9 +315,11 @@ if(  $editItem )
 {
     $HW = new HTMLWrap();
     
-    echo '<form action="'.  href_link(FILENAME_ITEMS, array('action' => 'update', IDSTR => $_GET[IDSTR])).'" method="POST">'."\n"
-            .'<fieldset><legend>Editing Item ID: '.$_GET[IDSTR].'</legend>'
-            ."\n";
+    echo '<form action="'
+        .  href_link(FILENAME_ITEMS, array('action' => 'update', IDSTR => $_GET[IDSTR]))
+        .'" method="POST" enctype="multipart/form-data">'."\n"
+        .'<fieldset><legend>Editing Item ID: '.$_GET[IDSTR].'</legend>'
+        ."\n";
     
     $itypes = ItemType::fetch_all($mysqli, ItemType::RESULT_ASSOC_ARRAY);
     
@@ -281,37 +331,39 @@ if(  $editItem )
     
     echo '<p>';
     $HW->print_select('itype', $itypes, 'Item Type', $Item->itemType );
-    echo "</p>";
+    echo "</p>\n";
     
     echo '<p>';
     $HW->print_textbox('qty', $Item->qty_available, 'Qty Avail');
-    echo "</p>";
+    echo "</p>\n";
     
     echo '<p>';
     $HW->print_textbox('name', $Item->name, 'Name');
-    echo "</p>";
+    echo "</p>\n";
     
     echo '<p>';
     if( $staff->isManager )
     {
         $HW->print_textbox('promo', $Item->promoRate, 'Promo Rate');
-        echo "<br/>";
+        echo "<br/>\n";
     }
     else
     {
         echo '<label>Promo Rate</label> '.$Item->promoRate;
     }
-    echo "</p>";
+    echo "</p>\n";
     
     echo '<p>';
     $HW->print_textbox('price', $Item->price, 'Price');
-    echo "</p>";
+    echo "</p>\n";
     
     echo '<p>';
-    $HW->print_textbox('image', $Item->imageName, 'Image');
-    echo "</p>";
+    echo '<img src="'.SITE_BASE_URL . DIR_IMAGES_PRODUCTS. $Item->imageName. '" /><br/>';
+//    $HW->print_textbox('image', $Item->imageName, 'Image');
+    echo '<input type="file" name="image"><br/>';
+    echo "</p>\n";
 
-    echo '<input type="submit" value="Update" /> <a href="'.  href_link(FILENAME_ITEMS).'">Cancel</a>';
+    echo '<input type="submit" value="Update" name="submit" /> <a href="'.  href_link(FILENAME_ITEMS).'">Cancel</a>';
     echo "</fieldset>\n</form>\n";
 }
 // done printing edit form.

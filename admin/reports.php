@@ -48,107 +48,56 @@ form fieldset p { margin: 5px; }
 ENDCSS;
 
 require './header.php';
+require './includes/class-MysqlResultTable.php';
 
 echo '<h1>Reports</h1>'."\n";
-echo '<p>Sales Statistics View the list of all items and sales history in the previous (week, month, or year)</p>';
 
-/**
- * @todo Make a form for choosing week, month, or year.
- * 
- * @todo Make queries to handle such data.
- */
-
+// Default the report to show the last week.
 $reportview = REPORTVIEW_WEEK;
+
+// If the URL contained a different timeframe, then use it.
 if( isset($_GET[GETKEYVIEW]))
 {
     $reportview = $_GET[GETKEYVIEW];
 }
-$stmt = $mysqli->prepare("SELECT itm.itemId, itm.enabled, typ.name,"
-        . " itm.qty_available, itm.name, itm.promoRate, itm.price "
-        . "FROM Item itm JOIN ItemType typ ON typ.itemTypeId = itm.itemType "
-        . " ORDER BY itm.itemId"
-        );
 
-$stmt->execute();
-
-$stmt->bind_result($itemid, $enab, $itype, $qty, $name, $promo, $price );
-
-$data = array();
-
-$colnames = array();
-$coltypes = array();
-$result = $stmt->result_metadata();
-
-$flds = $result->fetch_fields();
-
-//echo '<pre>'. print_r($flds,true).'</pre>';
-
-foreach( $flds as $val )
+// Construct the report time string.
+$report_time_string = "1 WEEK";
+switch($reportview)
 {
-    $colnames[] = $val->name;
-    
-    // Detect the field type for CSS formatting.
-    $type = TableSet::TYPE_STRING;
-    switch( $val->type)
-    {
-        case MYSQLI_TYPE_BIT:
-        case MYSQLI_TYPE_LONG:
-            $type = TableSet::TYPE_INT;
-            break;
-        
-        case MYSQLI_TYPE_STRING:
-            $type = TableSet::TYPE_STRING;
-            break;
-        
-        case MYSQLI_TYPE_NEWDECIMAL:
-            $type = TableSet::TYPE_REAL;
-            break;
-    }
-    $coltypes[] = $type;
+    case REPORTVIEW_MONTH:
+        $report_time_string = "1 MONTH";
+        break;
+    case REPORTVIEW_YEAR:
+        $report_time_string = "1 YEAR";
 }
 
-while( $stmt->fetch())
-{    
-    $col = array( $itemid, $enab, $itype, $qty, $name, $promo, $price );
-    $data[] = $col;
-}
+echo '<p>Sales Statistics View the list of all items and sales history in the previous <b>'.$report_time_string.'</b></p>';
 
-$stmt->close();
+echo '<ul>';
+echo '<li><a href="'.  href_link(FILENAME_REPORTS, array(GETKEYVIEW => REPORTVIEW_WEEK)).'">1 WEEK</a></li>';
+echo '<li><a href="'.  href_link(FILENAME_REPORTS, array(GETKEYVIEW => REPORTVIEW_MONTH)).'">1 MONTH</a></li>';
+echo '<li><a href="'.  href_link(FILENAME_REPORTS, array(GETKEYVIEW => REPORTVIEW_YEAR)).'">1 YEAR</a></li>';
+echo '</ul>'
+;
 
-$ts = new TableSet();
-$ts->set_data($data);
+$MRT = new MysqlResultTable($mysqli);
+$MRT->show_row_numbers(false);
 
-$ts->show_row_numbers(false);
-$ts->replace_column_values(1, array(0 => 'no', 1 => 'yes'));
+$MRT->executeQuery("select 
+    oi.itemId,
+    max(i.name) as name,
+    min(o.dateOrdered) firstOrdered,
+    max(o.dateOrdered) as lastOrdered,
+    sum(oi.qty) as qty, sum(oi.qty * oi.price) as subT, 
+    max(i.itemType) as itype
+FROM OrderItem oi JOIN Item i ON i.itemId = oi.itemId
+JOIN Orders o ON o.orderId = oi.orderId
+WHERE o.dateOrdered > date_sub(now(), INTERVAL $report_time_string)
+GROUP BY oi.itemId
+");
 
-
-//die( var_dump($ts->set_column_names($colnames)));
-$ts->set_column_names($colnames);
-$ts->set_column_name(2, 'Type');
-
-$ts->set_column_types($coltypes);
-$ts->set_column_type(1, TableSet::TYPE_STRING);
-
-$ts->add_column('Special Price');
-$ts->set_column_type(7, TableSet::TYPE_REAL);
-$ts->set_column_width(7, '60px');
-
-// Compute the special price.
-// Add the links to edit.
-for($row=0,$n=$ts->get_num_rows(); $row < $n; $row++)
-{
-    $prom = $ts->get_value_at($row, 5);
-    $prc = $ts->get_value_at($row, 6);
-    
-    // Only display a special price.
-    if( $prom != 1)
-    $ts->set_value_at($row, 7, $prom * $prc);
-    
-}
-// done iterating over rows.
-
-$ts->print_table_html();
-
+$MRT->print_table_html();
 
 require './footer.php';
 
