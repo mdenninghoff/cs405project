@@ -228,7 +228,7 @@ class Orders extends DBEntity
         $stmt->close();
 
         $this->Customer = new Customers();
-        $this->Customer->init_by_key($value);
+        $this->Customer->init_by_key($this->custId);
 
         $this->dateOrdered = new DateTime($dateOrdered_str);
         
