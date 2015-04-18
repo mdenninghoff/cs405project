@@ -29,7 +29,7 @@
 
 define('SESSION_ID_KEY', 'sessID');
 
-define('STORE_NAME', 'Amazan.cam');
+define('STORE_NAME', 'Amazam.cam');
 define('STORE_LOGO_IMG', 'logo.jpg');
 
 // The path of admin folder. This is used to set the cookie path, and it's
