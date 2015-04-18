@@ -71,7 +71,7 @@ if( isset($_GET['action']) )
             
             // For safer uploads, only use the itemID as the filename, and
             // don't let the user dictate the filename.
-            $targetFile = $targetDir . $Item->getKeyValue() . $imageFileType;
+            $targetFile = $targetDir . $Item->getKeyValue() .'.'. $imageFileType;
             
             // Check if image file is an actual image or fake image.
             $check = getimagesize($_FILES['image']['tmp_name']);
@@ -90,7 +90,7 @@ if( isset($_GET['action']) )
                         
                         // Change the database value.
 //                        $Item->imageName = $_FILES['image']['name'];
-                        $Item->imageName = $Item->getKeyValue() . $imageFileType;
+                        $Item->imageName = $Item->getKeyValue() .'.'. $imageFileType;
                         
                     } else {
                         $_SERVER[STACKNAME_ERRORS][] = "Sorry, there was an error uploading your file.";
