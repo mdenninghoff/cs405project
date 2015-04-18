@@ -81,7 +81,7 @@ class HTMLWrap
         }
         // done iterating over values.
 
-        echo "</select></label>\n";
+        echo "</select>\n";
     }
     // end print_select().
 
@@ -94,7 +94,7 @@ class HTMLWrap
      */
     public function print_textbox( $name, $value, $label )
     {
-        echo '<label for="'.$name.'">'.$label.'</label> <input type="text" name="'.$name.'" value="'.$value.'" /></label>'."\n";
+        echo '<label for="'.$name.'">'.$label.'</label> <input type="text" name="'.$name.'" value="'.$value.'" />'."\n";
     }
     // end print_textbox().
     
