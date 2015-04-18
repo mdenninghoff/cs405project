@@ -81,6 +81,11 @@ if( isset($_GET['action']) )
                 {
                     if(move_uploaded_file($_FILES['image']['tmp_name'], $targetFile))
                     {
+                        if( ! chmod($targetFile, 0644))
+                        {
+                            $_SESSION[STACKNAME_ERRORS][] = 'Failed to set read permissions for file.';
+                        }
+                        
                         $_SESSION[STACKNAME_NOTICE][] = 'The file '.basename( $_FILES['image']['name']). ' was uploaded.';
                         
                         // Change the database value.
