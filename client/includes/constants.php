@@ -8,7 +8,7 @@
 
 define('SESSION_ID_KEY', 'sessID');
 
-define('STORE_NAME', 'A COOL FUCKING SITE.PHP');
+define('STORE_NAME', 'AMAZAM.PHP');
 define('STORE_LOGO_IMG', 'logo.jpg');
 
 define('DIR_CLIENT', 'cs405projectf/cs405projectf/client/');
