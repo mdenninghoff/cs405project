@@ -1,6 +1,5 @@
 <?php
 
-define('SKIP_REDIRECT_NOT_LOGGED_IN', TRUE);
 require './includes/application_top.php';
 require '../admin/includes/class-Orders.php';
 require '../admin/includes/class-OrderItem.php';
@@ -78,7 +77,7 @@ if(mysqli_num_rows($result)>0){
                 echo "</ul>";
                 echo "<ul class='flex-container'>";
                 echo "<li class='flex-menu'>";
-                echo '<button class="my-button"><a href="'.  href_link(FILENAME_CART, array('action'=>'order')).'">order</a></button>'."\n";
+                echo '<div class="my-button"><a href="'.  href_link(FILENAME_CART, array('action'=>'order')).'">order</a></div>'."\n";
                 echo "total cost: ". $cart_cost;
                 echo "</li>";
                 echo "<li class='flex-menu'>";

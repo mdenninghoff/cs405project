@@ -82,7 +82,7 @@ if( isset($_GET['action']) )
                         echo "</br>";
                         //echo " <button class='my-button' onclick='foo2({$row["itemID"]})'>add to cart</button>";
                         //echo ' <button class="my-button"><a href="' . href_link(FILENAME_SHOPPING, array('action'=>'cart')). '">add to cart</a> '</button>';
-                        echo '<button class="my-button"><a href="'.  href_link(FILENAME_SHOPPING, array('action'=>'cart', IDSTR=>$row["itemID"])).'">add to cart</a></button>'."\n";
+                        echo '<div class="my-button"><a href="'.  href_link(FILENAME_SHOPPING, array('action'=>'cart', IDSTR=>$row["itemID"])).'">add to cart</a></div>'."\n";
                         echo "</li>";
                 }
                 echo "</ul>";
