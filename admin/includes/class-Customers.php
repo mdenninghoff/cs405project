@@ -34,12 +34,14 @@ class Customers extends DBEntity
     public $sessionId = null;
     
     const SQL_COLUMN_LIST = " custId, name, password, sessionId ";
+    const COL_SESSIONID = 'sessionId';
     
     public function __construct( $id = null )
     {
         parent::__construct($id);
         $this->tableName = 'Customer';
         $this->keyName = 'custId';
+        
     }
     
     /**
@@ -93,6 +95,46 @@ class Customers extends DBEntity
         
         return $retval;
     }
+    
+    /*
+    public function init_by_name($value)
+    {
+        $retval = false;
+        $stmt = self::$mysqli->prepare("SELECT " . self::SQL_COLUMN_LIST . "FROM ".$this->tableName." WHERE ".$this->keyName." = ? ");
+        
+        if( ! $stmt )
+            throw new Exception (self::$mysqli->error, self::$mysqli->errno );
+        
+        // Try to fetch the results; throw an exception on failure.
+        try
+        {
+            if( ! $stmt->bind_param(MYSQLI_BIND_TYPE_INT, $value) )
+            {
+                throw new Exception('Failed to bind_param');
+            }
+            
+            if( ! $stmt->execute() )
+            {
+                throw new Exception('Failed to execute statement:' . self::$mysqli->error);
+            }
+            
+            $stmt->bind_result($this->keyValue, 
+                    $this->name,
+                    $this->password,
+                    $this->sessionId );
+            $retval = $stmt->fetch();
+            
+        } catch (Exception $ex) {
+            $stmt->close();
+            throw $ex;
+        }
+        // end catch exception.
+        $stmt->close();
+        
+        return $retval;
+    }
+     
+     */
     // end find_by_key().
     
     /**
@@ -100,6 +142,33 @@ class Customers extends DBEntity
      * 
      * @return boolean
      */
+    public function init_by_sessionId($sessid)
+    {
+        $retval = false;
+        $stmt = self::$mysqli->prepare("SELECT " . self::SQL_COLUMN_LIST
+                . " FROM ".$this->tableName
+                . " WHERE ".self::COL_SESSIONID." = ?");
+        if( $stmt )
+        {
+            if( $stmt->bind_param(MYSQLI_BIND_TYPE_STRING, $sessid))
+            {
+                if( $stmt->execute() )
+                {        
+                    $stmt->bind_result($this->keyValue, $this->name,
+                             $this->password, $this->sessionId );
+
+                    $stmt->fetch();
+                    $retval = true;
+                }
+                // end if execute was good.
+            }
+            // end if bind succeeded.
+            $stmt->close();
+        }
+        // end if stmt good.
+        
+        return $retval;
+    }
     public function db_update()
     {
         $retval = false;

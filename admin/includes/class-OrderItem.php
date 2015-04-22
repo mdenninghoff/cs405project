@@ -49,7 +49,7 @@ class OrderItem extends DBEntity
         $this->tableName = 'OrderItem';
         $this->keyName = 'orderId';
     }
-  
+    
     /**
      * Set the class member values by fetching values from the database.
      * If the key was not found, then the class member fields remain null.

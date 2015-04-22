@@ -79,8 +79,11 @@
         <ul class='flex-container'>
             <li class='flex-menu'>employee?</li>
             <li class='flex-header'>amazam.cam</li>
-            <li class='flex-menu'><a href="<?php echo href_link(FILENAME_LOGIN)?>">login</a></li>
-            <li class='flex-menu'>register</li>
+            <li class='flex-menu'><a href="<?php echo href_link(FILENAME_SHOPPING)?>">shopping</a></li>
+            <li class='flex-menu'><a href="<?php echo href_link(FILENAME_CART)?>">my cart</a></li>
+            <li class='flex-menu'><a href="<?php echo href_link(FILENAME_ORDERS)?>">my orders</a></li>
+            <li class='flex-menu'><a href="<?php echo href_link(FILENAME_LOGIN, array('action' => 'logout') ); ?>">log out</a></li>
+            <li class='flex-menu'><a href="<?php echo href_link(FILENAME_REGISTER)?>">register</a></li>
         </ul>
         </div>
         <div id='customer_content'>

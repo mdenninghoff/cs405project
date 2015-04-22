@@ -7,9 +7,10 @@
  */
 
 define('SKIP_REDIRECT_NOT_LOGGED_IN', TRUE);
-include '../admin/includes/class-dbentity.php';
-include '../admin/includes/class-Customers.php';
 require './includes/application_top.php';
+//include '../admin/includes/class-dbentity.php';
+//include '../admin/includes/class-Customers.php';
+
 
 
 $errors = array();
@@ -17,14 +18,15 @@ $errors = array();
 
 if( isset($_GET['action']))
 {
+   // echo $_POST['u_name'];
    // echo'<pre>'. print_r($_POST, true).'</pre>';
    // exit();
     switch($_GET['action'])
-    {
+    {   
         case 'login':
             // Verify the user's credentials.
             
-            if(! isset($_POST['custID']) )
+            if(! isset($_POST['u_name']) )
             {
                 $errors[] = 'customer ID missing';
                 break;
@@ -36,9 +38,9 @@ if( isset($_GET['action']))
                 break;
             }
 
-            $cust = new Customer();
+            $cust = new Customers();
             
-            if( ! $cust->init_by_key($_POST['custId']))
+            if( ! $cust->init_by_key($_POST['u_name']))
             {
                 $errors[] = 'Customer ID not found';
                 break;
@@ -50,6 +52,13 @@ if( isset($_GET['action']))
                 break;
             }
             
+            /*
+            if( ! (crypt($_POST['pass'],CRYPT_SALT) == $cust->password))
+            {
+                $errors[] = 'Invalid Password';
+                break;
+            }
+            */
             $_SESSION[SESSION_ID_KEY] = session_id();
             
             $cust->sessionId = $_SESSION[SESSION_ID_KEY];
@@ -81,6 +90,7 @@ if( isset($_GET['action']))
 include './cheader.php';
 
 //error handling
+$page = isset($_GET['page']) ? '<input type="hidden" name="page" value="'.$_GET['page'].'" />' :'';
 
 
 ?>
@@ -88,7 +98,7 @@ include './cheader.php';
  
     <form action="login.php?action=login" method="POST">
     <li class='flex-menu2'>
-        User ID <input type="text" name="custId" value="<?php echo isset($_POST['custId']) ? $_POST['custId'] : ''; ?>" /></br>
+        User Name: <input type="text" name="u_name" value="<?php echo isset($_POST['u_name']) ? $_POST['u_name'] : ''; ?>" /></br>
     Password <input type="password" name="pass" value="" /></br>
     <input type="submit" value="Submit" /></li>
     </form>
