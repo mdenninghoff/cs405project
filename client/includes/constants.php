@@ -52,3 +52,5 @@ define('CRYPT_SALT', 'm1RMaNe!');
 define('STACKNAME_ERRORS','errors');
 define('STACKNAME_NOTICE','notice');
 
+define('DATE_ADMIN_ORDER_BRIEF', 'D Y-M-d g:i A');  // in the list of orders. 
+define('DATE_ADMIN_ORDER_DETAIL', 'D M d, Y g:i A');    // in the detail of an order.

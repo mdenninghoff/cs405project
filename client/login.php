@@ -40,7 +40,7 @@ if( isset($_GET['action']))
 
             $cust = new Customers();
             
-            if( ! $cust->init_by_key($_POST['u_name']))
+            if( ! $cust->init_by_name($_POST['u_name']))
             {
                 $errors[] = 'Customer ID not found';
                 break;

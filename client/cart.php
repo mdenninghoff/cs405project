@@ -25,13 +25,13 @@ if( isset($_GET['action']))
             $cquery2= "SELECT promoRate, price FROM Item WHERE itemId =". $c_row["itemId"]; 
             $cresult2 = $mysqli->query($cquery2);
             $cr_info = mysqli_fetch_assoc($cresult2);
-            $c_order_item = new OrderItem();
-            $c_order_item->orderId = $c_order->getKeyValue();
+            $c_order_item = new OrderItem($c_order->getKeyValue());
             $c_order_item->itemId = $c_row['itemId'];
             $c_order_item->price = ($cr_info['price'] * $cr_info['promoRate']);
             $c_order_item->qty = $c_row['qty'];
             $c_order_item->db_insert();
         }
+        clear_cart($cust1->getKeyValue(), $mysqli);
     }
 }
 

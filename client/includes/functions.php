@@ -45,6 +45,14 @@ function logout_user()
     session_destroy();
 }
 
+function clear_cart($custid, $mysqli)
+{
+    $retval = false;
+    $stmt= $mysqli->prepare("DELETE FROM Cart WHERE custId=". $custid);
+    $retval = $stmt->execute();
+    $stmt->close();
+    return $retval;
+}
 if( !function_exists('password_verify'))
 {
     function password_verify($password, $hash )
