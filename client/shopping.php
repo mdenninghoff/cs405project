@@ -67,7 +67,7 @@ if( isset($_GET['action']) )
         
     }
 }
-        $query = "SELECT name, price, itemID, imageName FROM Item";
+        $query = "SELECT name, price, promoRate, itemID, imageName FROM Item";
 
 
         $result = $mysqli->query($query);
@@ -78,9 +78,9 @@ if( isset($_GET['action']) )
                         //echo "$row["name"]";
                         echo "<li class='flex-item'>";
                         echo $row["name"] . " ";
-                        echo $row["price"];
+                        echo ($row["price"] * $row['promoRate']);
                         echo "</br>";
-                        echo '<img src="/cs405/'.DIR_IMAGES_PRODUCTS.$row['imageName'].'" width="100px" /><br/>';
+                        echo '<img src="/'.DIR_CLIENT . DIR_IMAGES_PRODUCTS.$row['imageName'].'" width="100px" /><br/>';
                         //echo " <button class='my-button' onclick='foo2({$row["itemID"]})'>add to cart</button>";
                         //echo ' <button class="my-button"><a href="' . href_link(FILENAME_SHOPPING, array('action'=>'cart')). '">add to cart</a> '</button>';
                         echo '<div class="my-button"><a href="'.  href_link(FILENAME_SHOPPING, array('action'=>'cart', IDSTR=>$row["itemID"])).'">add to cart</a></div>'."\n";
