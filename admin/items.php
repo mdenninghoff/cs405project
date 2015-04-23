@@ -60,7 +60,7 @@ if( isset($_GET['action']) )
 
 //        echo '<pre>'. print_r($_FILES,true).'</pre>'; exit;
         
-        if( isset($_FILES['image']))
+        if( isset($_FILES['image']) && isset($_FILES['image']['name']) && $_FILES['image']['name'] )
         {
             // Code from: http://www.w3schools.com/php/php_file_upload.asp
             $targetDir = FS_STORE_BASE_DIR . DIR_IMAGES_PRODUCTS;
