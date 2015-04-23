@@ -72,7 +72,21 @@ require('./includes/class-TablesetDefaultCSS.php');
     <li><a href="<?php echo href_link(FILENAME_ORDERS); ?>">Orders</a></li>
     <li><a href="<?php echo href_link(FILENAME_ITEMS); ?>">Items</a></li>
     <li><a href="<?php echo href_link(FILENAME_REPORTS); ?>">Reports</a></li>
-    <li><a href="<?php echo href_link(FILENAME_LOGIN, array('action' => 'logout') ); ?>">Log Out</a></li>
+    <?php
+    // If user is logged in show logout.
+    if( isset($_SESSION[SESSION_ID_KEY]))
+    {
+        echo '<li><a href="'
+            . href_link(FILENAME_LOGIN, array('action' => 'logout') )
+            . '">Log Out</a></li>';
+    }
+    // else show login text.
+    else
+    {
+        echo '<li><a href="' 
+            . href_link(FILENAME_LOGIN ) . '">Log In</a></li>';
+    }
+    ?>
    </ul>
   </div>
   <div id="mainContent">

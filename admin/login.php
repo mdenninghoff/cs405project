@@ -26,22 +26,10 @@
  * THE SOFTWARE.
  */
 
+// Don't redirect a user, because this is where they'd be redirected to.
 define('SKIP_REDIRECT_NOT_LOGGED_IN', TRUE);
-require './includes/application_top.php';
 
-//
-// Detect if the user is already logged in.
-// If so, then redirect them to the index.
-//
-//if(isset($_SESSION[SESSION_ID_KEY]))
-//{
-//    $staff = new Staff();
-//    if( $staff->init_by_sessionId($_SESSION[SESSION_ID_KEY]) )
-//    {
-//        http_redirect(FILE_INDEX);
-//    }
-//}
-// done redirecting already logged-in user.
+require './includes/application_top.php';
 
 $errors = array();
 
@@ -100,6 +88,7 @@ if( isset($_GET['action']))
         
         case 'logout':
             logout_user();
+            http_redirect(FILENAME_LOGIN);
             break;
     }
     // end switch _GET[action]
