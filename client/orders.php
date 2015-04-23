@@ -39,92 +39,49 @@ require '../admin/includes/class-OrderStatus.php';
 require '../admin/includes/class-Orders.php';
 require '../admin/includes/class-HtmlWrap.php';
 require '../admin/includes/class-TableSet.php';
+require '../admin/includes/class-TablesetDefaultCSS.php';
 
-// @TODO: verify manager  type.
-
-if( isset($_GET['action']) )
-{
-    if( $_GET['action'] == 'shipit' && isset($_GET[IDSTR]) )
-    {
-        /*
-         * If all the components are available, the status of the order changes
-         *  from "Pending" to "Shipped" and the quantities in the inventory are
-         *  decreased. If the components are not available, some error page
-         *  listing the missing components is generated and the order remains 
-         * "Pending".
-         */
-        
-        // Verify that all the items are available.
-        $Order = new Orders();
-        $Order->init_by_key($_GET[IDSTR]);
-        
-        try
-        {
-            $missing = null;
-            $res = $Order->shipIt($missing);
-            
-            if( $res )
-            {
-                $_SESSION[STACKNAME_NOTICE][] = 'Shipped';   
-            }
-            else
-            {
-                $_SESSION[STACKNAME_ERRORS][] = 'Quantity unavailable to ship order.';
-                foreach( $missing as $msg )
-                {
-                    $_SESSION[STACKNAME_ERRORS][] = $msg;
-                }
-            }
-        }
-        catch( Exception $ex)
-        {
-            $_SESSION[STACKNAME_ERRORS][] = $ex->getMessage();
-        }
-
-        // Redirct back to items.php?oId=12345.
-        http_redirect(FILENAME_ORDERS . '?action=edit&'.IDSTR.'='.$_GET[IDSTR]);
-        
-        exit;
-    }
-}
-
-$headerAdditionalCss = <<<ENDCSS
- p.shipTo { background-color: white; } 
-        
- fieldset table.tableset th { background-color: yellowgreen;}
- fieldset table.tableset { background-color: #ddd;}
-        
-label { display:block; float:left; width:120px; }
-
-form fieldset p { margin: 5px; }
-
-form fieldset {margin-top: 5px; }
-form fieldset legend { background-color:#33a383; padding:6px; }
-ENDCSS;
 require './cheader.php';
+
+?>
+<style type="text/css">
+ <?php     
+$TDC = new TablesetDefaultCSS();
+
+$TDC->set_css_th_value('background-color', 'tomato');
+$TDC->set_css_table_value('background-color', 'white');
+$TDC->set_css_footer_value('background-color', 'whitesmoke');
+$TDC->print_css();
+
+ // Allow scripts that include us to add extra CSS in this block.
+ if( isset($headerAdditionalCss))
+ {
+     echo $headerAdditionalCss;
+ }
+ ?>
+</style>
+<?php
 
 echo '<h1>Orders</h1>'."\n";
 
 //
-// Print a form to edit an individual item.
+// Print a form to detail an individual item.
 //
-if( isset($_GET['action']) && $_GET['action'] == 'edit' && isset($_GET[IDSTR]))
+if( isset($_GET['action']) && $_GET['action'] == 'detail' && isset($_GET[IDSTR]))
 {
     $HW = new HTMLWrap();
     
     $Orders = new Orders();
     $Orders->init_by_key($_GET[IDSTR]);
     
-    echo '<form action="'.  href_link(FILENAME_ORDERS, array('action' => 'shipit', IDSTR => $_GET[IDSTR])).'" method="POST">'."\n"
-            .'<fieldset><legend>Viewing Order# '.$Orders->getKeyValue().'</legend>'
-            ."\n";
+    echo '<fieldset><legend>Viewing Order# '.$Orders->getKeyValue().'</legend>'."\n";
     
 //    $itypes = ItemType::fetch_all($mysqli, ItemType::RESULT_ASSOC_ARRAY);
     
     $Date = $Orders->get_dateOrdered();
     
     echo '<p>Customer Name: ' . $Orders->get_customer()->name . "<br/>\n"
-            .'Date: ' . $Date->format(DATE_ADMIN_ORDER_DETAIL) . "</p>\n";
+            .'Date: ' . $Date->format('D M d, Y g:i A') . "</p>\n";
     
     echo '<p class="shipTo">ShipTo: <br/>' . $Orders->shipTo. "</p>\n";
     
@@ -138,10 +95,9 @@ if( isset($_GET['action']) && $_GET['action'] == 'edit' && isset($_GET[IDSTR]))
     $ItemTS = new TableSet();
     $ItemTS->show_row_numbers(false);
   
-    $columnNames = array('Item ID','Name','Price','Qty<br>Ordered','SubTotal','Qty<br>Available');
+    $columnNames = array('Item ID','Name','Price','Qty<br>Ordered','SubTotal' );
     $columnTypes = array(TableSet::TYPE_INT, TableSet::TYPE_STRING,
-        TableSet::TYPE_REAL, TableSet::TYPE_INT, TableSet::TYPE_REAL,
-        TableSet::TYPE_INT);
+        TableSet::TYPE_REAL, TableSet::TYPE_INT, TableSet::TYPE_REAL );
     
     $data = array();
     
@@ -162,10 +118,6 @@ if( isset($_GET['action']) && $_GET['action'] == 'edit' && isset($_GET[IDSTR]))
         
         $row[4] = $OrderItem->price * $OrderItem->qty;
         
-        
-        
-        $row[5] = $Item->qty_available;
-        
         $data[] = $row;
     }
     // done creating item table data.
@@ -180,12 +132,11 @@ if( isset($_GET['action']) && $_GET['action'] == 'edit' && isset($_GET[IDSTR]))
     
     $ItemTS->print_table_html();
     
-//    echo '<pre>' . print_r($Orders,true) . "</pre>\n";
       
-    echo '<br><input type="submit" value="SHIP IT" /> <a href="'.  href_link(FILENAME_ORDERS).'">Cancel</a>';
-    echo "</fieldset>\n</form>\n";
+    echo '<br><a href="'.  href_link(FILENAME_ORDERS).'">Back</a>';
+    echo "</fieldset>\n\n";
 }
-// done printing edit form.
+// done printing detail form.
 else
 {
         $cust = new Customers();
@@ -263,23 +214,16 @@ else
     $ts->set_column_name(1, 'Customer');
     $ts->set_column_name(2, 'Date');
     $ts->set_column_name(3, 'Status');
-    //
-    //$ts->set_column_types($coltypes);
-    //$ts->set_column_type(1, TableSet::TYPE_STRING);
-    //
-    //$ts->add_column('Special Price');
-    //$ts->set_column_type(7, TableSet::TYPE_REAL);
-    //$ts->set_column_width(7, '60px');
-
+    
     
     $ts->add_column('&nbsp;');
 
-    // Add the links to edit.
+    // Add the links to detail.
     for($row=0,$n=$ts->get_num_rows(); $row < $n; $row++)
     {
         $itemId = $ts->get_value_at($row, 0);
-        $href = '<a href="'.href_link(FILENAME_ORDERS, array('action' => 'edit', IDSTR => $itemId))
-                .'">edit</a>';
+        $href = '<a href="'.href_link(FILENAME_ORDERS, array('action' => 'detail', IDSTR => $itemId))
+                .'">detail</a>';
         $ts->set_value_at($row, 5, $href);
     }
     // done iterating over rows.
