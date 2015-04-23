@@ -71,7 +71,6 @@ require('./includes/class-TablesetDefaultCSS.php');
    <ul>
     <li><a href="<?php echo href_link(FILENAME_ORDERS); ?>">Orders</a></li>
     <li><a href="<?php echo href_link(FILENAME_ITEMS); ?>">Items</a></li>
-    <li><a href="<?php echo href_link(FILENAME_SPECIALS); ?>">Specials</a></li>
     <li><a href="<?php echo href_link(FILENAME_REPORTS); ?>">Reports</a></li>
     <li><a href="<?php echo href_link(FILENAME_LOGIN, array('action' => 'logout') ); ?>">Log Out</a></li>
    </ul>
