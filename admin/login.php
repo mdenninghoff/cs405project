@@ -95,6 +95,9 @@ if( isset($_GET['action']))
 }
 // end if( isset($_GET['action'])).
 
+$headerAdditionalCss = <<<ENDCSS
+ #mainContent { top: -100px; }
+ENDCSS;
 include './header.php';
 
 if( isset($_GET['action']) && $_GET['action'] == 'logout')
