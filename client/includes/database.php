@@ -6,7 +6,7 @@
  * and open the template in the editor.
  */
 
-$mysqli = new mysqli('mysql.cs.uky.edu', 'madenn2', 'happydragon1buffet', 'madenn2', 3306);
+$mysqli = new mysqli('mysql.cs.uky.edu', '', '', '', 3306);
 
 /* check connection */
 if (mysqli_connect_errno()) {
