@@ -96,19 +96,22 @@ class Customers extends DBEntity
         return $retval;
     }
     
-    /*
+    
     public function init_by_name($value)
     {
         $retval = false;
-        $stmt = self::$mysqli->prepare("SELECT " . self::SQL_COLUMN_LIST . "FROM ".$this->tableName." WHERE ".$this->keyName." = ? ");
+        $stmt = self::$mysqli->prepare("SELECT " . self::SQL_COLUMN_LIST . "FROM ".$this->tableName." WHERE name = ? ");
         
         if( ! $stmt )
-            throw new Exception (self::$mysqli->error, self::$mysqli->errno );
+        {
+            
+        }
+            //throw new Exception (self::$mysqli->error, self::$mysqli->errno );
         
         // Try to fetch the results; throw an exception on failure.
         try
         {
-            if( ! $stmt->bind_param(MYSQLI_BIND_TYPE_INT, $value) )
+            if( ! $stmt->bind_param(MYSQLI_BIND_TYPE_STRING, $value) )
             {
                 throw new Exception('Failed to bind_param');
             }
@@ -125,7 +128,7 @@ class Customers extends DBEntity
             $retval = $stmt->fetch();
             
         } catch (Exception $ex) {
-            $stmt->close();
+                $stmt->close();
             throw $ex;
         }
         // end catch exception.
@@ -134,7 +137,7 @@ class Customers extends DBEntity
         return $retval;
     }
      
-     */
+     
     // end find_by_key().
     
     /**
