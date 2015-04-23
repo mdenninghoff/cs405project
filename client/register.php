@@ -55,6 +55,12 @@ include './cheader.php';
 //error handling
 
 
+if( isset($_POST['username']) )
+{
+    echo '<h2>Welcome ' . $_POST['username'] . '</h2>';
+}
+else
+{
 ?>
    <ul class='flex-container'>
  
@@ -67,6 +73,7 @@ include './cheader.php';
    </ul>
    
 <?php
+}
 
 
 if( isset($_GET['pass']))
